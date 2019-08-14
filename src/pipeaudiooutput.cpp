@@ -146,6 +146,7 @@ int PipeAudioOutput::StopPlaying()
 
 int PipeAudioOutput::GetSamples(SWORD *buffer,DWORD num)
 {
+	printf("GetSamples %d\n", num );
 	//Bloqueamos
 	pthread_mutex_lock(&mutex);
 

@@ -3,7 +3,7 @@
 #include "g711/g711codec.h"
 //#include "gsm/gsmcodec.h"
 //#include "speex/speexcodec.h"
-#include "nelly/NellyCodec.h"
+//#include "nelly/NellyCodec.h"
 #include "opus/opusencoder.h"
 #include "opus/opusdecoder.h"
 #include "g722/g722codec.h"
@@ -33,10 +33,10 @@ AudioEncoder* AudioCodecFactory::CreateEncoder(AudioCodec::Type codec, const Pro
 			return new PCMUEncoder(properties);
 //		case AudioCodec::SPEEX16:
 //			return new SpeexEncoder(properties);
-		case AudioCodec::NELLY8:
-			return new NellyEncoder(properties);
-		case AudioCodec::NELLY11:
-			return new NellyEncoder11Khz(properties);
+//		case AudioCodec::NELLY8:
+//			return new NellyEncoder(properties);
+//		case AudioCodec::NELLY11:
+//			return new NellyEncoder11Khz(properties);
 		case AudioCodec::OPUS:
 			return new OpusEncoder(properties);
 		case AudioCodec::G722:
@@ -65,10 +65,10 @@ AudioDecoder* AudioCodecFactory::CreateDecoder(AudioCodec::Type codec)
 			return new PCMUDecoder();
 //		case AudioCodec::SPEEX16:
 //			return new SpeexDecoder();
-		case AudioCodec::NELLY8:
-			return NULL;
-		case AudioCodec::NELLY11:
-			return new NellyDecoder11Khz();
+//		case AudioCodec::NELLY8:
+//			return NULL;
+//		case AudioCodec::NELLY11:
+//			return new NellyDecoder11Khz();
 		case AudioCodec::OPUS:
 			return new OpusDecoder();
 		case AudioCodec::G722:

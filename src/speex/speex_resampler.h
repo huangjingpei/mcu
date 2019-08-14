@@ -53,7 +53,7 @@
 
 #define CAT_PREFIX2(a,b) a ## b
 #define CAT_PREFIX(a,b) CAT_PREFIX2(a, b)
-      
+
 #define speex_resampler_init CAT_PREFIX(RANDOM_PREFIX,_resampler_init)
 #define speex_resampler_init_frac CAT_PREFIX(RANDOM_PREFIX,_resampler_init_frac)
 #define speex_resampler_destroy CAT_PREFIX(RANDOM_PREFIX,_resampler_destroy)

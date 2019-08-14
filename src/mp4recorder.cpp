@@ -531,6 +531,7 @@ void MP4Recorder::onMediaFrame(MediaFrame &frame)
 
 void MP4Recorder::onMediaFrame(DWORD ssrc, MediaFrame &frame)
 {
+	waitVideo = 0;
 	// Check if we have to wait for video
 	if (waitVideo && (frame.GetType()!=MediaFrame::Video))
 		//Do nothing yet

@@ -9,7 +9,7 @@ public:
 	AudioEncoderWorker();
 	~AudioEncoderWorker();
 
-	int Init(AudioInput *input);
+	int Init(AudioInput *input, bool forceChange = true);
 	bool AddListener(MediaFrame::Listener *listener);
 	bool RemoveListener(MediaFrame::Listener *listener);
 	int SetAudioCodec(AudioCodec::Type codec);

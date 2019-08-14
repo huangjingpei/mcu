@@ -3,7 +3,7 @@
 ###########################################
 include config.mk
 
-OPTS+= -fPIC -DPIC -msse -msse2 -msse3 -DSPX_RESAMPLE_EXPORT= -DRANDOM_PREFIX=mcu -DOUTSIDE_SPEEX -DFLOATING_POINT -D__SSE2__
+OPTS+= -fPIC -DPIC -msse -msse2 -msse3 -DSPX_RESAMPLE_EXPORT= -DRANDOM_PREFIX=mcu -DFLOATING_POINT -D__SSE2__
 
 #DEBUG
 ifeq ($(DEBUG),yes)
@@ -69,10 +69,12 @@ GSMDIR=gsm
 GSMOBJ=
 
 SPEEXDIR=speex
-SPEEXOBJ=speexcodec.o resample.o
+#SPEEXOBJ=speexcodec.o resample.o
+SPEEXOBJ=resample.o
 
 NELLYDIR=nelly
-NELLYOBJ=NellyCodec.o
+#NELLYOBJ=NellyCodec.o
+NELLYOBJ=
 
 OPUSDIR=opus
 OPUSOBJ=opusdecoder.o opusencoder.o
@@ -120,9 +122,10 @@ COREDIR=core
 
 #OBJS=  $(COREOBJ) $(BFCPOBJ) $(VNCOBJ) cpim.o  groupchat.o httpparser.o websocketserver.o websocketconnection.o audio.o video.o mcu.o rtpparticipant.o multiconf.o  rtmpparticipant.o videomixer.o audiomixer.o xmlrpcserver.o xmlhandler.o xmlstreaminghandler.o statushandler.o xmlrpcmcu.o   rtpsession.o audiostream.o videostream.o audiotransrater.o pipeaudioinput.o pipeaudiooutput.o pipevideoinput.o pipevideooutput.o framescaler.o sidebar.o mosaic.o partedmosaic.o asymmetricmosaic.o pipmosaic.o logo.o overlay.o amf.o rtmpmessage.o rtmpchunk.o rtmpstream.o rtmpconnection.o  rtmpserver.o broadcaster.o broadcastsession.o rtmpflvstream.o flvrecorder.o FLVEncoder.o xmlrpcbroadcaster.o mediagateway.o mediabridgesession.o xmlrpcmediagateway.o textmixer.o textmixerworker.o textstream.o pipetextinput.o pipetextoutput.o mp4player.o mp4streamer.o audioencoder.o audiodecoder.o textencoder.o mp4recorder.o rtmpmp4stream.o rtmpnetconnection.o avcdescriptor.o RTPSmoother.o rtp.o rtmpclientconnection.o vad.o stunmessage.o crc32calc.o remoteratecontrol.o remoterateestimator.o uploadhandler.o http.o appmixer.o fecdecoder.o videopipe.o eventstreaminghandler.o dtls.o CPUMonitor.o OpenSSL.o
 #OBJS+= $(G711OBJ) $(H263OBJ) $(GSMOBJ)  $(H264OBJ) ${FLV1OBJ} $(SPEEXOBJ) $(NELLYOBJ) $(G722OBJ) $(JSR309OBJ) $(VADOBJ) $(VP6OBJ) $(VP8OBJ) $(OPUSOBJ) $(AACOBJ)
-OBJS=  $(COREOBJ) cpim.o  groupchat.o httpparser.o websocketserver.o websocketconnection.o audio.o video.o videomixer.o audiomixer.o rtpsession.o audiostream.o videostream.o audiotransrater.o pipeaudioinput.o pipeaudiooutput.o pipevideoinput.o pipevideooutput.o framescaler.o sidebar.o mosaic.o partedmosaic.o asymmetricmosaic.o pipmosaic.o logo.o overlay.o amf.o rtmpmessage.o rtmpchunk.o rtmpstream.o rtmpconnection.o  rtmpserver.o broadcaster.o broadcastsession.o rtmpflvstream.o flvrecorder.o FLVEncoder.o mediagateway.o mediabridgesession.o textmixer.o textmixerworker.o textstream.o pipetextinput.o pipetextoutput.o mp4player.o mp4streamer.o audioencoder.o audiodecoder.o textencoder.o mp4recorder.o rtmpmp4stream.o rtmpnetconnection.o avcdescriptor.o RTPSmoother.o rtp.o rtmpclientconnection.o vad.o stunmessage.o crc32calc.o http.o appmixer.o fecdecoder.o videopipe.o CPUMonitor.o
-OBJS+= $(G711OBJ) $(H263OBJ) $(H264OBJ) ${FLV1OBJ} $(NELLYOBJ) $(G722OBJ) $(JSR309OBJ) $(VADOBJ) $(VP6OBJ) $(VP8OBJ) $(OPUSOBJ) $(AACOBJ)
-TARGETS=mcu test
+OBJS=  $(COREOBJ) cpim.o  groupchat.o httpparser.o  audio.o video.o videomixer.o audiomixer.o audiotransrater.o pipeaudioinput.o pipeaudiooutput.o pipevideoinput.o pipevideooutput.o framescaler.o sidebar.o mosaic.o partedmosaic.o asymmetricmosaic.o pipmosaic.o logo.o overlay.o amf.o textmixer.o textmixerworker.o pipetextinput.o pipetextoutput.o mp4player.o mp4streamer.o audioencoder.o audiodecoder.o textencoder.o mp4recorder.o avcdescriptor.o rtp.o  vad.o crc32calc.o http.o videopipe.o
+OBJS+= $(G711OBJ) $(H263OBJ) $(H264OBJ) ${SPEEXOBJ} ${FLV1OBJ} $(NELLYOBJ) $(G722OBJ) $(JSR309OBJ) $(VADOBJ) $(VP6OBJ) $(VP8OBJ) $(OPUSOBJ) $(AACOBJ)
+#TARGETS=mcu test
+TARGETS=mcu
 
 ifeq ($(FLASHSTREAMER),yes)
 	GNASHINCLUDE = -I$(GNASHBASE) -I$(GNASHBASE)/server -I$(GNASHBASE)/libbase -I$(GNASHBASE)/libgeometry -I$(GNASHBASE)/server/parser -I$(GNASHBASE)/server/vm -I$(GNASHBASE)/backend -I$(GNASHBASE)/libmedia -DFLASHSTREAMER
@@ -206,7 +209,7 @@ ifeq ($(STATIC_OPENSSL),yes)
 	INCLUDE+= -I$(OPENSSL_DIR)/include
 	LDFLAGS+= $(OPENSSL_DIR)/libssl.a $(OPENSSL_DIR)/libcrypto.a
 else
-	LDFLAGS+= -lssl -lcrypto
+	#LDFLAGS+= -lssl -lcrypto
 endif
 
 
@@ -227,11 +230,13 @@ ifeq ($(STATIC),yes)
 	LDFLAGS+=/usr/local/src/libvpx/libvpx.a
 	LDFLAGS+=/usr/local/lib/libmp4v2.a
 else
-	LDFLAGS+= -lavcodec -lswscale -lavformat -lavutil -lavresample -lx264 -lmp4v2 -lspeex -lvpx -lopus
+	#LDFLAGS+= -lavcodec -lswscale -lavformat -lavutil -lavresample -lx264 -lmp4v2 -lspeex -lvpx -lopus
+	LDFLAGS+= -lavcodec -lswscale -lavformat -lavutil -lavresample -lx264 -lmp4v2 -lspeex -lopus
 endif
 
 #LDFLAGS+= -lxmlrpc -lxmlrpc_xmlparse -lxmlrpc_xmltok -lxmlrpc_abyss -lxmlrpc_server -lxmlrpc_util -lnsl -lpthread -lz -ljpeg -lpng -lresolv -L/lib/i386-linux-gnu -lgcrypt
-LDFLAGS+= -lnsl -lpthread -lz -lresolv
+#LDFLAGS+= -lnsl -lpthread -lz -lresolv
+LDFLAGS+= -lpthread -lz
 
 #For abyss
 OPTS 	+= -D_UNIX -D__STDC_CONSTANT_MACROS
@@ -249,7 +254,8 @@ CXXFLAGS+= $(INCLUDE) $(OPTS)
 ############################################
 #Targets
 ############################################
-all: touch mkdirs $(TARGETS) certs
+#all: touch mkdirs $(TARGETS) certs
+all: touch mkdirs $(TARGETS)
 
 touch:
 	#touch $(SRCDIR)/include/version.h

@@ -67,11 +67,14 @@ int AudioEncoderWorker::SetAudioCodec(AudioCodec::Type codec)
 * Init
 *	Inicializa los devices
 ***************************************/
-int AudioEncoderWorker::Init(AudioInput *input)
+int AudioEncoderWorker::Init(AudioInput *input, bool forceChanged)
 {
 	Log(">Init audio encoder\n");
 
 	//Nos quedamos con los puntericos
+	if ((forceChanged == false) && (audioInput)) {
+		return 1;
+	}
 	audioInput  = input;
 
 	//Y aun no estamos mandando nada

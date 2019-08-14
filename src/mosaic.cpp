@@ -489,6 +489,10 @@ int Mosaic::CalculatePositions()
 				}
 				break;
 		}
+
+
+		printf("－－－i %d mosaicSlots[i] %d \n", i, mosaicSlots[i]);
+
 	}
 }
 

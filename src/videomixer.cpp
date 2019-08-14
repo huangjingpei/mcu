@@ -117,9 +117,13 @@ int VideoMixer::MixVideo()
 			Mosaic *mosaic = source->mosaic;
 
 			//Si no ha cambiado el frame volvemos al principio
-			if (input && mosaic && (source->refresh || mosaic->HasChanged() || forceUpdate))
+			if (input && mosaic && (source->refresh || mosaic->HasChanged() || forceUpdate)) {
 				//Colocamos el frame
+				FILE *fp = fopen("out.yuv", "a+");
+				fwrite(mosaic->GetFrame(), 1, mosaic->GetWidth()*mosaic->GetHeight()*3/2, fp);
+				fclose(fp);
 				input->SetFrame(mosaic->GetFrame(),mosaic->GetWidth(),mosaic->GetHeight());
+			}
 			//Reset refresh 
 			source->refresh = true;
 		}
@@ -240,10 +244,11 @@ int VideoMixer::MixVideo()
 
 				//Check if it has changed
 				bool changed = (oldPos[i]!=partId);
-				
 				//If there is a participant in the slot
 				if (partId)
 				{
+
+
 					//Find  it
 					Videos::iterator it = lstVideos.find(partId);
 
@@ -472,7 +477,6 @@ int VideoMixer::Init(const Properties &properties)
 
 	//Set ini time
 	ini = getTime();
-
 	//Y arrancamoe el thread
 	createPriorityThread(&mixVideoThread,startMixingVideo,this,0);
 

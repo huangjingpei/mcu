@@ -566,8 +566,277 @@
 //#endif
 //}
 //
+#include <pipevideoinput.h>
+#include "core/VideoEncoderWorker.h"
+#include "mp4recorder.h"
+class RtcVideoEncoder :
+	public VideoEncoderWorker {
+public:
+	RtcVideoEncoder();
+	virtual ~RtcVideoEncoder();
+
+	int Init(VideoInput *input);
+	int SetCodec(VideoCodec::Type codec,int mode,int fps,int bitrate,int intraPeriod,const Properties & properties);
+	int End();
+
+	int  SetMediaListener(MediaFrame::Listener *listener);
+
+public:
+	int Start();
+	int Stop();
+
+	virtual void FlushRTXPackets();
+	virtual void SmoothFrame(const VideoFrame *videoFrame,DWORD sendingTime);
+};
+
+/*
+ * File:   VideoEncoderWorker.cpp
+ * Author: Sergio
+ *
+ * Created on 2 de noviembre de 2011, 23:37
+ */
+
+
+
+
+
+
+RtcVideoEncoder::RtcVideoEncoder() : VideoEncoderWorker()
+{
+}
+
+RtcVideoEncoder::~RtcVideoEncoder()
+{
+}
+
+int RtcVideoEncoder::Init(VideoInput *input)
+{
+	//Init encoder
+	return VideoEncoderWorker::Init(input);
+}
+
+int RtcVideoEncoder::SetCodec(VideoCodec::Type codec,int mode,int fps,int bitrate,int intraPeriod, const Properties& properties)
+{
+	//Set codec properties
+	if (!VideoEncoderWorker::SetCodec(codec,mode,fps,bitrate,intraPeriod,properties))
+		//Error
+		return 0;
+
+	//Exit
+	return 1;
+}
+
+int RtcVideoEncoder::Start()
+{
+	//Start encoder
+	VideoEncoderWorker::Start();
+
+	return 1;
+}
+
+int RtcVideoEncoder::Stop()
+{
+	//Stop encoder
+	VideoEncoderWorker::Stop();
+
+	return 1;
+}
+
+int RtcVideoEncoder::End()
+{
+	//Stop
+	return Stop();
+}
+
+void RtcVideoEncoder::FlushRTXPackets()
+{
+}
+
+void RtcVideoEncoder::SmoothFrame(const VideoFrame *videoFrame,DWORD sendingTime)
+{
+	//RTPMultiplexerSmoother::SmoothFrame(videoFrame,sendingTime);
+}
+
+int  RtcVideoEncoder::SetMediaListener(MediaFrame::Listener *listener)
+{
+	//Set codec properties
+	if (!VideoEncoderWorker::SetMediaListener(listener))
+		//Error
+		return 0;
+
+	//Exit
+	return 1;
+}
+
+#if 0
+#include <unistd.h>
+int main()
+{
+	Properties properties;
+	PipeVideoInput *input = new PipeVideoInput();
+	MP4Recorder *record = new MP4Recorder();
+	record->Create("out.mp4");
+	record->Record();
+	input->Init();
+	input->StartVideoCapture(1280, 720, 15);
+	RtcVideoEncoder *encoder = new RtcVideoEncoder();
+	properties.SetProperty("streaming", "true");
+	encoder->SetCodec(VideoCodec::Type::H264, HD720P, 25, 1024*1024, 30, properties);
+	encoder->SetMediaListener(record);
+	encoder->Init(input);
+	encoder->Start();
+	FILE *fp = fopen("abc.yuv", "r+");
+	int frameSize = 1280*720*3/2;
+	BYTE  frameBuffer[frameSize];
+	while (1) {
+		int r  = fread(frameBuffer, 1, frameSize, fp);
+		printf("r %d\n", r);
+		if (r <= 0) {
+			break;
+		}
+		input->SetFrame(frameBuffer, 1280,720);
+		usleep(60*1000);
+	}
+
+	encoder->Stop();
+	input->End();
+	record->Close();
+	fclose(fp);
+	return 0;
+}
+#else
+
+#include "videomixer.h"
+#include "audioencoder.h"
+int testVideo()
+{
+	Properties properties;
+	properties.SetProperty("streaming", "true");
+	properties.SetProperty("mosaics.default.compType", (int)Mosaic::mosaic1p1);
+	properties.SetProperty("mosaics.default.size"		, HD720P);
+	std::wstring tag = L"record";
+	std::wstring name1 = L"chn1";
+	std::wstring name2 = L"chn2";
+	VideoInput *input1 = NULL;
+	VideoInput *input2 = NULL;
+	VideoOutput * output1 = NULL;
+	VideoOutput * output2 = NULL;
+	VideoMixer *mixer = new VideoMixer(tag);
+
+
+
+	int mosaicId = mixer->CreateMosaic(Mosaic::Type::mosaic1p1, HD720P);
+
+	mixer->AddMosaicParticipant(mosaicId,1 );
+	mixer->AddMosaicParticipant(mosaicId,2 );
+	mixer->CreateMixer(1,name1);
+	mixer->CreateMixer(2,name2);
+	input1 = mixer->GetInput(1);
+	input2 = mixer->GetInput(2);
+
+	output1 = mixer->GetOutput(1);
+	output2 = mixer->GetOutput(2);
+	output1->SetVideoSize(1280, 720);
+	output2->SetVideoSize(1280, 720);
+
+	MP4Recorder *record = new MP4Recorder();
+	record->Create("out.mp4");
+	record->Record();
+	RtcVideoEncoder *encoder = new RtcVideoEncoder();
+	encoder->SetCodec(VideoCodec::Type::H264, HD720P, 25, 1024*1024, 30, properties);
+	encoder->SetMediaListener(record);
+	encoder->Init(input1);
+	encoder->Start();
+	mixer->Init(properties);
+
+	mixer->InitMixer(1, mosaicId);
+	mixer->InitMixer(2, mosaicId);
+	FILE *fp = fopen("abc.yuv", "r+");
+	int frameSize = 1280*720*3/2;
+	BYTE  frameBuffer[frameSize];
+	while (1) {
+		int r  = fread(frameBuffer, 1, frameSize, fp);
+		if (r <= 0) {
+			break;
+		}
+		output1->NextFrame(frameBuffer);
+		output2->NextFrame(frameBuffer);
+		usleep(60*1000);
+	}
+	encoder->Stop();
+	mixer->End();
+	record->Close();
+	fclose(fp);
+
+	return 0;
+}
+
+
+#include "audiomixer.h"
+int testAudio()
+{
+	Properties properties;
+	properties.SetProperty("rate"		, 8000);
+//	properties.SetProperty("aac.samplerate", 48000);
+//	properties.SetProperty("aac.bitrate", 64000);
+	std::wstring name1 = L"chn1";
+	std::wstring name2 = L"chn2";
+	AudioInput *input1 = NULL;
+	AudioInput *input2 = NULL;
+	AudioOutput * output1 = NULL;
+	AudioOutput * output2 = NULL;
+	AudioMixer *mixer = new AudioMixer();
+	mixer->CreateMixer(1);
+	mixer->CreateMixer(2);
+
+	int sidebarId = mixer->CreateSidebar();
+
+	mixer->AddSidebarParticipant(sidebarId, 1);
+	mixer->AddSidebarParticipant(sidebarId, 2);
+
+	input1 = mixer->GetInput(1);
+	input2 = mixer->GetInput(2);
+
+	output1 = mixer->GetOutput(1);
+	output2 = mixer->GetOutput(2);
+	output1->StartPlaying(48000);
+	output2->StartPlaying(48000);
+
+	MP4Recorder *record = new MP4Recorder();
+	record->Create("out.mpa");
+	record->Record();
+	AudioEncoderWorker *encoderWorker = new AudioEncoderWorker();
+	encoderWorker->SetAudioCodec(AudioCodec::Type::PCMU);
+	encoderWorker->AddListener(record);
+	encoderWorker->Init(input1);
+	encoderWorker->StartEncoding();
+	mixer->Init(properties);
+
+	mixer->InitMixer(1, sidebarId);
+	mixer->InitMixer(2, sidebarId);
+	FILE *fp = fopen("abc.pcm", "r+");
+	int frameSize = 480;
+	SWORD  frameBuffer[frameSize];
+	while (1) {
+		int r  = fread((char *)frameBuffer, 1, 960, fp);
+		if (r <= 0) {
+			break;
+		}
+		output1->PlayBuffer(frameBuffer, 480, 0);
+		output2->PlayBuffer(frameBuffer, 480, 0);
+		usleep(10*1000);
+	}
+	encoderWorker->StopEncoding();
+	mixer->End();
+	record->Close();
+	fclose(fp);
+
+	return 0;
+}
 
 int main()
 {
+	testVideo();
 	return 0;
 }
+#endif

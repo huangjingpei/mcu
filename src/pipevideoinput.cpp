@@ -11,7 +11,13 @@ PipeVideoInput::PipeVideoInput()
 	pthread_cond_init(&newPicCond,0);
 
 	//No estamos iniciados
-	//inited = false;
+	videoWidth = 1280;
+	videoHeight = 720;
+	videoSize = (videoWidth*videoHeight*3)/2;
+	videoFPS = 15;
+	imgNew = false;
+	imgPos = false;
+	inited = false;
 	capturing = false;
 	grabPic = 0;
 	imgBuffer[0] = NULL;
