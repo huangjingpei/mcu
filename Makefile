@@ -3,7 +3,7 @@
 ###########################################
 include config.mk
 
-OPTS+= -fPIC -DPIC -msse -msse2 -msse3 -DSPX_RESAMPLE_EXPORT= -DRANDOM_PREFIX=mcu -DFLOATING_POINT -D__SSE2__
+OPTS+= -fPIC -DPIC -msse -msse2 -msse3 -DSPX_RESAMPLE_EXPORT= -DRANDOM_PREFIX=mcu -DFLOATING_POINT -D__SSE2__ -DFF_INPUT_BUFFER_PADDING_SIZE=32 -DFF_MIN_BUFFER_SIZE=16384
 
 #DEBUG
 ifeq ($(DEBUG),yes)
@@ -123,9 +123,9 @@ COREDIR=core
 #OBJS=  $(COREOBJ) $(BFCPOBJ) $(VNCOBJ) cpim.o  groupchat.o httpparser.o websocketserver.o websocketconnection.o audio.o video.o mcu.o rtpparticipant.o multiconf.o  rtmpparticipant.o videomixer.o audiomixer.o xmlrpcserver.o xmlhandler.o xmlstreaminghandler.o statushandler.o xmlrpcmcu.o   rtpsession.o audiostream.o videostream.o audiotransrater.o pipeaudioinput.o pipeaudiooutput.o pipevideoinput.o pipevideooutput.o framescaler.o sidebar.o mosaic.o partedmosaic.o asymmetricmosaic.o pipmosaic.o logo.o overlay.o amf.o rtmpmessage.o rtmpchunk.o rtmpstream.o rtmpconnection.o  rtmpserver.o broadcaster.o broadcastsession.o rtmpflvstream.o flvrecorder.o FLVEncoder.o xmlrpcbroadcaster.o mediagateway.o mediabridgesession.o xmlrpcmediagateway.o textmixer.o textmixerworker.o textstream.o pipetextinput.o pipetextoutput.o mp4player.o mp4streamer.o audioencoder.o audiodecoder.o textencoder.o mp4recorder.o rtmpmp4stream.o rtmpnetconnection.o avcdescriptor.o RTPSmoother.o rtp.o rtmpclientconnection.o vad.o stunmessage.o crc32calc.o remoteratecontrol.o remoterateestimator.o uploadhandler.o http.o appmixer.o fecdecoder.o videopipe.o eventstreaminghandler.o dtls.o CPUMonitor.o OpenSSL.o
 #OBJS+= $(G711OBJ) $(H263OBJ) $(GSMOBJ)  $(H264OBJ) ${FLV1OBJ} $(SPEEXOBJ) $(NELLYOBJ) $(G722OBJ) $(JSR309OBJ) $(VADOBJ) $(VP6OBJ) $(VP8OBJ) $(OPUSOBJ) $(AACOBJ)
 OBJS=  $(COREOBJ) cpim.o  groupchat.o httpparser.o  audio.o video.o videomixer.o audiomixer.o audiotransrater.o pipeaudioinput.o pipeaudiooutput.o pipevideoinput.o pipevideooutput.o framescaler.o sidebar.o mosaic.o partedmosaic.o asymmetricmosaic.o pipmosaic.o logo.o overlay.o amf.o textmixer.o textmixerworker.o pipetextinput.o pipetextoutput.o mp4player.o mp4streamer.o audioencoder.o audiodecoder.o textencoder.o mp4recorder.o avcdescriptor.o rtp.o  vad.o crc32calc.o http.o videopipe.o
-OBJS+= $(G711OBJ) $(H263OBJ) $(H264OBJ) ${SPEEXOBJ} ${FLV1OBJ} $(NELLYOBJ) $(G722OBJ) $(JSR309OBJ) $(VADOBJ) $(VP6OBJ) $(VP8OBJ) $(OPUSOBJ) $(AACOBJ)
+OBJS+= $(G711OBJ) $(H263OBJ) $(H264OBJ) ${SPEEXOBJ} $(NELLYOBJ) $(G722OBJ) $(JSR309OBJ) $(VADOBJ) $(VP6OBJ) $(VP8OBJ) $(OPUSOBJ) $(AACOBJ)
 #TARGETS=mcu test
-TARGETS=mcu
+TARGETS=mcu libmediamixer
 
 ifeq ($(FLASHSTREAMER),yes)
 	GNASHINCLUDE = -I$(GNASHBASE) -I$(GNASHBASE)/server -I$(GNASHBASE)/libbase -I$(GNASHBASE)/libgeometry -I$(GNASHBASE)/server/parser -I$(GNASHBASE)/server/vm -I$(GNASHBASE)/backend -I$(GNASHBASE)/libmedia -DFLASHSTREAMER
@@ -156,8 +156,9 @@ else
 endif
 
 
+
 OBJSMCU = $(OBJS) main.o
-OBJSLIB = $(OBJS)
+OBJSLIB = $(OBJS) RecordInstance.o
 OBJSTEST = $(OBJS) test/main.o test/test.o test/cpim.o test/rtp.o test/fec.o test/overlay.o
 OBJSRTMPDEBUG = $(OBJS) rtmpdebug.o
 OBJSFLVDUMP = $(OBJS) flvdump.o
@@ -202,8 +203,11 @@ VPATH +=  %.cpp $(SRCDIR)/src/$(COREDIR)
 
 
 
-INCLUDE+= -I$(SRCDIR)/src -I$(SRCDIR)/include/ $(VADINCLUDE) $(CEFINCLUDE) -I$(SRCDIR)/src/vnc/common -I$(SRCDIR)/src/vnc/libvncserver
+#INCLUDE+= -I$(SRCDIR)/src -I$(SRCDIR)/include/ $(VADINCLUDE) $(CEFINCLUDE) -I$(SRCDIR)/src/vnc/common -I$(SRCDIR)/src/vnc/libvncserver
 #LDFLAGS+= -lgsm -lpthread -lsrtp2
+MYINCLUDE:=/usr/local/src
+INCLUDE+= -I$(MYINCLUDE)/src -I$(MYINCLUDE)/include/ -I$(SRCDIR)/src -I$(SRCDIR)/include/
+
 
 ifeq ($(STATIC_OPENSSL),yes)
 	INCLUDE+= -I$(OPENSSL_DIR)/include
@@ -222,6 +226,7 @@ ifeq ($(STATIC),yes)
 	LDFLAGS+=/usr/local/src/ffmpeg/libavformat/libavformat.a
 	LDFLAGS+=/usr/local/src/ffmpeg/libavcodec/libavcodec.a
 	LDFLAGS+=/usr/local/src/ffmpeg/libavresample/libavresample.a
+	LDFLAGS+=/usr/local/src/ffmpeg/libswresample/libswresample.a
 	LDFLAGS+=/usr/local/src/ffmpeg/libswscale/libswscale.a
 	LDFLAGS+=/usr/local/src/ffmpeg/libavutil/libavutil.a
 	LDFLAGS+=/usr/local/src/x264/libx264.a
@@ -231,15 +236,16 @@ ifeq ($(STATIC),yes)
 	LDFLAGS+=/usr/local/lib/libmp4v2.a
 else
 	#LDFLAGS+= -lavcodec -lswscale -lavformat -lavutil -lavresample -lx264 -lmp4v2 -lspeex -lvpx -lopus
-	LDFLAGS+= -lavcodec -lswscale -lavformat -lavutil -lavresample -lx264 -lmp4v2 -lspeex -lopus
+	LDFLAGS+= -lavcodec -lswscale -lavformat -lavutil -lavresample -lmp4v2 -lspeex -lopus
+	LDFLAGS+=/usr/local/src/x264/libx264.a
 endif
 
 #LDFLAGS+= -lxmlrpc -lxmlrpc_xmlparse -lxmlrpc_xmltok -lxmlrpc_abyss -lxmlrpc_server -lxmlrpc_util -lnsl -lpthread -lz -ljpeg -lpng -lresolv -L/lib/i386-linux-gnu -lgcrypt
 #LDFLAGS+= -lnsl -lpthread -lz -lresolv
-LDFLAGS+= -lpthread -lz
+LDFLAGS+= -lpthread -lz -ldl
 
 #For abyss
-OPTS 	+= -D_UNIX -D__STDC_CONSTANT_MACROS
+OPTS 	+= -D_UNIX -D__STDC_CONSTANT_MACROS 
 CFLAGS  += $(INCLUDE) $(OPTS)
 CXXFLAGS+= $(INCLUDE) $(OPTS)
 
@@ -294,6 +300,10 @@ mcu: $(OBJSMCU)
 	$(CXX) -o $(BIN)/$@ $(BUILDOBJSMCU) $(LDFLAGS) $(VADLD) $(CEFLD)
 	@echo [OUT] $(TAG) $(BIN)/$@
 	
+libmediamixer:$(OBJSLIB)
+	gcc -shared -Wl,-Bsymbolic -o $(BIN)/$@.so $(BUILDOBJSMCU) $(LDFLAGS) $(VADLD)  $(CEFLD) 
+	@echo [OUT] $(TAG) $(BIN)/$@
+	
 buildtest: $(OBJSTEST)
 	$(CXX) -o $(BIN)/test $(BUILDOBJSTEST) $(LDFLAGS) $(VADLD) $(CEFLD)
 	
@@ -307,9 +317,8 @@ flvdump: $(OBJSFLVDUMP)
 	$(CXX) -o $(BIN)/$@ $(BUILDOBJSFLVDUMP) $(LDFLAGS) $(VADLD)
 
 
-libmediamixer: $(OBJSLIB)
-	gcc $(CXXFLAGS) -c lib/mediamixer.cpp -o $(BUILD)/mediamixer.o -DPIC -fPIC
-	gcc -shared -o $(BIN)/$@.so $(BUILDOBJOBJSLIB) $(BUILD)/mediamixer.o $(LDFLAGS) $(VADLD)  $(CEFLD)
+#libmediamixer: $(OBJSLIB)
+#	gcc $(CXXFLAGS) -c lib/mediamixer.cpp -o $(BUILD)/mediamixer.o -DPIC -fPIC
+#	gcc -shared -o $(BIN)/$@.so $(BUILDOBJOBJSLIB) $(BUILD)/mediamixer.o $(LDFLAGS) $(VADLD)  $(CEFLD)
 flashstreamer: $(OBJSFS) $(OBJS)
-	g++ -o $(BIN)/$@ $(BUILDOBJSFS) $(BUILDOBJS) $(GNASHBASE)/backend/.libs/libgnashagg.a /usr/lib/libagg.a $(LDFLAGS) $(GNASHLD)
-
+	g++ -o $(BIN)/$@ $(BUILDOBJSFS) $(BUILDOBJS) $(GNASHBASE)/backend/.libs/libgnashagg.a /usr/lib/libagg.a $(LDFLAGS) $(GNASHLD) 

@@ -1,6 +1,6 @@
 #include "log.h"
 #include "video.h"
-#include "flv1/flv1codec.h"
+//#include "flv1/flv1codec.h"
 #include "h263/h263codec.h"
 #include "h263/mpeg4codec.h"
 #include "h264/h264encoder.h"
@@ -16,8 +16,8 @@ VideoDecoder* VideoCodecFactory::CreateDecoder(VideoCodec::Type codec)
 	//Depending on the codec
 	switch(codec)
 	{
-		case VideoCodec::SORENSON:
-			return new FLV1Decoder();
+//		case VideoCodec::SORENSON:
+//			return new FLV1Decoder();
 		case VideoCodec::H263_1998:
 			return new H263Decoder();
 		case VideoCodec::H263_1996:
@@ -53,8 +53,8 @@ VideoEncoder* VideoCodecFactory::CreateEncoder(VideoCodec::Type codec,const Prop
 	//Depending on the codec
 	switch(codec)
 	{
-		case VideoCodec::SORENSON:
-			return new FLV1Encoder(properties);
+//		case VideoCodec::SORENSON:
+//			return new FLV1Encoder(properties);
 		case VideoCodec::H263_1998:
 			return new H263Encoder(properties);
 		case VideoCodec::H263_1996:

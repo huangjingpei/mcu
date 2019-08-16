@@ -90,20 +90,29 @@ int  RtcVideoEncoder::SetMediaListener(MediaFrame::Listener *listener)
 	return 1;
 }
 
+RecordInstance::RecordInstance() {
+}
+
+RecordInstance::~RecordInstance() {
+	videoencoder_->End();
+	audioencoder_->StopEncoding();
+}
 RecordInstance* RecordInstance::GetInstance() {
-	if (NULL == m_instance) {
-		pthread_mutex_lock(&m_mutex);
-		if (NULL != m_instance) {
+	do {
+		if (NULL == m_instance) {
+			pthread_mutex_lock(&m_mutex);
+			if (NULL != m_instance) {
+				pthread_mutex_unlock(&m_mutex);
+				break;
+			}
+			m_instance = new RecordInstance;
+			if (m_instance->Init() != true) {
+				pthread_mutex_unlock(&m_mutex);
+				break;
+			}
 			pthread_mutex_unlock(&m_mutex);
-			break;
 		}
-		m_instance = new RecordInstance;
-		if (m_instance->Init() != true) {
-			pthread_mutex_unlock(&m_mutex);
-			break;
-		}
-		pthread_mutex_unlock(&m_mutex);
-	}
+	} while (0);
 	return m_instance;
 }
 
@@ -118,18 +127,25 @@ bool RecordInstance::Init() {
 	mp4record_ = new MP4Recorder();
 
 	audiomixer_ = new AudioMixer();
+	audiomixer_->CreateMixer(1);
+
 	audioencoder_ = new AudioEncoderWorker();
 	audioencoder_->SetAudioCodec(AudioCodec::Type::PCMU);
 	audioencoder_->AddListener(mp4record_);
 	audioencoder_->StartEncoding();
+	audioencoder_->Init(audiomixer_->GetInput(1));
 
 	videomixer_ = new VideoMixer(L"RSU");
+	videomixer_->CreateMixer(1, L"chn1");
+
 	videoencoder_ = new RtcVideoEncoder();
 	videoencoder_->SetCodec(VideoCodec::Type::H264, HD720P, 25, 1024*1024, 30, properties_);\
 	videoencoder_->SetMediaListener(mp4record_);
+	videoencoder_->Init(videomixer_->GetInput(1));
 	videoencoder_->Start();
 
-
+	sidebarid_ = audiomixer_->CreateSidebar();
+	mosaicid_ = videomixer_->CreateMosaic(Mosaic::Type::mosaic1p1, HD720P);
 	return true;
 }
 
@@ -151,19 +167,71 @@ int RecordInstance::StopRecord() {
 }
 
 int RecordInstance::AddParticipant(int id) {
-	audiomixer_->CreateMixer(id);
-	int sidebarId = audiomixer_->CreateSidebar();
-	audiomixer_->AddSidebarParticipant(sidebarId, id);
-	audiomixer_->InitMixer(id, sidebarId);
-	audioencoder_->Init(audiomixer_->GetInput(id), false);
-	std::wstring tag = L"" + id;
-	videomixer_->CreateMixer(id, tag);
-	int mosaicId = videomixer_->CreateMosaic(Mosaic::Type::mosaic1p1, HD720P);
-	videomixer_->AddMosaicParticipant(mosaicId,id);
-	videomixer_->InitMixer(1, mosaicId);
+
+
+	if (id != 1 ) {
+		std::wstring tag = L"" + id;
+		videomixer_->CreateMixer(id, tag);
+		audiomixer_->CreateMixer(id);
+
+	}
+
+	audiomixer_->InitMixer(id, sidebarid_);
+	videomixer_->InitMixer(id, mosaicid_);
+	videomixer_->GetOutput(id)->SetVideoSize(1280, 720);
+
+	audiomixer_->AddSidebarParticipant(sidebarid_, id);
+	videomixer_->AddMosaicParticipant(mosaicid_, id);
 	return 0;
 }
 
-int RecordInstance::RemoveParticipant(int id) {
+int RecordInstance::SetCompositionType() {
+	videomixer_->SetCompositionType(mosaicid_, Mosaic::Type::mosaic1x1, HD720P);
 	return 0;
 }
+int RecordInstance::RemoveParticipant(int id) {
+	audiomixer_->EndMixer(id);
+	videomixer_->EndMixer(id);
+	audiomixer_->RemoveSidebarParticipant(sidebarid_, id);
+	videomixer_->RemoveMosaicParticipant(mosaicid_, id);
+	return 0;
+}
+
+int RecordInstance::OutputToRec(int id, bool video, char *buf, int len) {
+	if (video) {
+		BYTE*  frameBuffer = (BYTE*)buf;
+		videomixer_->GetOutput(id)->NextFrame(frameBuffer);
+	} else {
+		SWORD*  frameBuffer = (SWORD*)buf;
+		audiomixer_->GetOutput(id)->PlayBuffer(frameBuffer, 480, 0);
+	}
+	return 0;
+}
+
+
+
+//int main(){
+//	RecordInstance *instance = RecordInstance::GetInstance();
+//	instance->StartRecord("abc.mp4");
+//	instance->AddParticipant(1);
+//	FILE *fp = fopen("abc.yuv", "r+");
+//	int frameSize = 1280*720*3/2;
+//	BYTE  frameBuffer[frameSize];
+//	int count = 0;
+//	while (1) {
+//		int r  = fread(frameBuffer, 1, frameSize, fp);
+//		if (r <= 0) {
+//			break;
+//		}
+//		if(++count == 25) {
+//			instance->SetCompositionType();
+//		}
+//		instance->OutputToRec(1, true, (char *)frameBuffer, 1280*720*3/2);
+//		usleep(60*1000);
+//	}
+//	instance->RemoveParticipant(1);
+//	printf("STOPRECORD BEGIN!\n");
+//	instance->StopRecord();
+//	printf("STOPRECORD END!\n");
+//	return 0;
+//}

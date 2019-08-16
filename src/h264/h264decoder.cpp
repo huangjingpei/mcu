@@ -37,7 +37,7 @@ H264Decoder::H264Decoder()
 
 	//Alocamos el contxto y el picture
 	ctx = avcodec_alloc_context3(codec);
-	ctx->flags != CODEC_FLAG_EMU_EDGE;
+//	ctx->flags != CODEC_FLAG_EMU_EDGE;
 	picture = av_frame_alloc();
 
 	//Alocamos el buffer

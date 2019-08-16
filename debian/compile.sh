@@ -5,7 +5,7 @@ PROCS=´nproc´
 
 # Install devel libraries in Debian/Ubuntu
 #
-apt-get -y install libgsm1-dev g++ make libtool subversion git automake subversion autoconf libgcrypt11-dev libjpeg8-dev libssl-dev
+#apt-get -y install libgsm1-dev g++ make libtool subversion git automake subversion autoconf libgcrypt11-dev libjpeg8-dev libssl-dev
  
 echo "/usr/local/lib" > /etc/ld.so.conf.d/local.conf
 ldconfig
@@ -13,7 +13,7 @@ ldconfig
 #
 # Needed by webrtc 
 #
-apt-get -y install bzip2 pkg-config libgtk2.0-dev libnss3-dev libxtst-dev libxss-dev libdbus-1-dev libdrm-dev libgconf2-dev libgnome-keyring-dev libpci-dev libudev-dev 
+#apt-get -y install bzip2 pkg-config libgtk2.0-dev libnss3-dev libxtst-dev libxss-dev libdbus-1-dev libdrm-dev libgconf2-dev libgnome-keyring-dev libpci-dev libudev-dev 
  
 #
 # External source code checkout
@@ -21,24 +21,27 @@ apt-get -y install bzip2 pkg-config libgtk2.0-dev libnss3-dev libxtst-dev libxss
 mkdir -p /usr/local/src
 cd /usr/local/src
  
-wget http://downloads.sourceforge.net/project/xmlrpc-c/Xmlrpc-c%20Super%20Stable/1.16.35/xmlrpc-c-1.16.35.tgz
-tar xvzf xmlrpc-c-1.16.35.tgz
-wget http://downloads.xiph.org/releases/speex/speex-1.2rc1.tar.gz
-tar xvzf speex-1.2rc1.tar.gz
-wget http://downloads.xiph.org/releases/opus/opus-1.0.2.tar.gz
-tar xvzf opus-1.0.2.tar.gz
-wget http://www.tortall.net/projects/yasm/releases/yasm-1.2.0.tar.gz
-tar xvzf yasm-1.2.0.tar.gz
+#wget http://downloads.sourceforge.net/project/xmlrpc-c/Xmlrpc-c%20Super%20Stable/1.16.35/xmlrpc-c-1.16.35.tgz
+#tar xvzf xmlrpc-c-1.16.35.tgz
+#wget http://downloads.xiph.org/releases/speex/speex-1.2rc1.tar.gz
+#tar xvzf speex-1.2rc1.tar.gz
+#wget http://downloads.xiph.org/releases/opus/opus-1.0.2.tar.gz
+#tar xvzf opus-1.0.2.tar.gz
+#wget http://www.tortall.net/projects/yasm/releases/yasm-1.2.0.tar.gz
+#tar xvzf yasm-1.2.0.tar.gz
+#wget https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/mp4v2/mp4v2-2.0.0.tar.bz2
+#tar jxvf mp4v2-2.0.0.tar.bz2 && mv mp4v2-2.0.0 mp4v2
  
-svn checkout svn://svn.code.sf.net/p/mcumediaserver/code/trunk medooze
-svn checkout http://mp4v2.googlecode.com/svn/trunk/ mp4v2
-git clone git://git.videolan.org/ffmpeg.git
-git clone git://git.videolan.org/x264.git
-git clone https://github.com/webmproject/libvpx/
-git clone https://github.com/cisco/libsrtp
+#svn checkout svn://svn.code.sf.net/p/mcumediaserver/code/trunk medooze
+#svn checkout http://mp4v2.googlecode.com/svn/trunk/ mp4v2
+#git clone git://git.videolan.org/ffmpeg.git
+#git clone git://git.videolan.org/x264.git
+#git clone https://github.com/webmproject/libvpx/
+#git clone https://github.com/cisco/libsrtp
 
-svn co http://src.chromium.org/chrome/trunk/tools/depot_tools
-export PATH="$PATH":/usr/local/src/depot_tools
+#svn co http://src.chromium.org/chrome/trunk/tools/depot_tools
+#export PATH="$PATH":/usr/local/src/depot_tools
+export PATH="$PATH":/opt/mywork/home/ubuntu/mywork/mywebrtc/depot_tools
 
 
 #
@@ -46,8 +49,8 @@ export PATH="$PATH":/usr/local/src/depot_tools
 #
 cd yasm-1.2.0
 ./configure
-make -j ${PROCS}
-make install
+#make -j ${PROCS}
+#make install
 cd ..
  
 #
@@ -55,8 +58,8 @@ cd ..
 #
  
 cd /usr/local/src/x264
-./configure --enable-debug --enable-shared --enable-pic
-make -j ${PROCS}
+#./configure --enable-debug --enable-shared --enable-pic
+#make -j ${PROCS}
 make install
 cd ..
 
@@ -65,9 +68,9 @@ cd ..
 #
  
 cd /usr/local/src/ffmpeg
-./configure --enable-shared --enable-gpl --enable-nonfree --disable-stripping --enable-zlib --enable-avresample --enable-decoder=png
-make -j ${PROCS}
-make install
+#./configure --enable-shared --enable-gpl --enable-nonfree --disable-stripping --enable-zlib --enable-avresample --enable-decoder=png --enable-pic --disable-symver --extra-cflags="-fPIC"
+#make -j ${PROCS}
+#make install
 cd ..
 
 #
@@ -75,8 +78,8 @@ cd ..
 #
  
 cd /usr/local/src/xmlrpc-c-1.16.35
-./configure
-make -j ${PROCS}
+#./configure
+#make -j ${PROCS}
 make install
 cd ..
 
@@ -85,8 +88,8 @@ cd ..
 #
  
 cd /usr/local/src/mp4v2
-autoreconf -fiv
-./configure
+autoreconf -fiv 
+./configure --with-pic=use
 make -j ${PROCS}
 make install
 
@@ -95,8 +98,8 @@ make install
 #
  
 cd /usr/local/src/libvpx
-./configure --enable-shared
-make -j ${PROCS}
+#./configure --enable-shared
+#make -j ${PROCS}
 make install
 
 #
@@ -104,8 +107,8 @@ make install
 #
  
 cd /usr/local/src/speex-1.2rc1
-./configure
-make -j ${PROCS}
+#./configure
+#make -j ${PROCS}
 make install
 
 #
@@ -113,8 +116,8 @@ make install
 #
  
 cd /usr/local/src/opus-1.0.2
-./configure
-make -j ${PROCS}
+#./configure
+#make -j ${PROCS}
 make install
 
 
@@ -123,8 +126,9 @@ make install
 #
  
 cd /usr/local/src/libsrtp
-./configure
-make -j ${PROCS}
+#./configure
+#make -j ${PROCS}
+#make
 make install
 
 

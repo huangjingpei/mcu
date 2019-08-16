@@ -4,7 +4,7 @@
 LOG		  = yes
 DEBUG 		  = yes
 SANITIZE          = no
-STATIC		  = no
+STATIC		  = yes
 VADWEBRTC	  = no
 IMAGEMAGICK       = no
 SRCDIR		  = .

@@ -31,7 +31,7 @@ public:
 	virtual void FlushRTXPackets() = 0;
 	virtual void SmoothFrame(const VideoFrame *videoFrame,DWORD sendingTime) = 0;
 
-protected:
+public:
 	int Start();
 	int Stop();
 	

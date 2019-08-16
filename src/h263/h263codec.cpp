@@ -147,7 +147,9 @@ int H263Encoder::OpenCodec()
 	ctx->rc_max_rate	= bitrate;
 	ctx->rc_buffer_size	= bitrate/fps+1;
 	ctx->rc_initial_buffer_occupancy = 0;
+#ifdef FF_API_MPV_OPT
 	ctx->rc_qsquish 	= 1;
+#endif
 	ctx->max_b_frames	= 0;
 
 	// Open codec

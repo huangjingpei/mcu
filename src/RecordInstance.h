@@ -11,13 +11,15 @@
 
 class RecordInstance {
 public:
+	virtual ~RecordInstance();
     static RecordInstance* GetInstance();
     int StartRecord(const std::string filename);
     int StopRecord();
 
     int AddParticipant(int id);
     int RemoveParticipant(int id);
-
+    int OutputToRec(int id, bool video, char *buf, int len);
+    int SetCompositionType();
 private:
 
 	Properties properties_;
@@ -28,11 +30,14 @@ private:
 
     VideoMixer *videomixer_;
     VideoEncoderWorker *videoencoder_;
+
+    int sidebarid_;
+    int mosaicid_;
 private:
 	bool Init();
     static pthread_mutex_t m_mutex;
     static RecordInstance* m_instance;
-    RecordInstance(){};
+    RecordInstance();
 };
 
 
