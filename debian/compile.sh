@@ -89,7 +89,7 @@ cd ..
  
 cd /usr/local/src/mp4v2
 autoreconf -fiv 
-./configure --with-pic=use
+./configure --with-pic CFLAGS="-fPIC" CXXFLAGS="-fPIC"
 make -j ${PROCS}
 make install
 
