@@ -223,21 +223,21 @@ ifeq ($(IMAGEMAGICK),yes)
 endif
 
 ifeq ($(STATIC),yes)
-	LDFLAGS+=/usr/local/src/ffmpeg/libavformat/libavformat.a
-	LDFLAGS+=/usr/local/src/ffmpeg/libavcodec/libavcodec.a
-	LDFLAGS+=/usr/local/src/ffmpeg/libavresample/libavresample.a
-	LDFLAGS+=/usr/local/src/ffmpeg/libswresample/libswresample.a
-	LDFLAGS+=/usr/local/src/ffmpeg/libswscale/libswscale.a
-	LDFLAGS+=/usr/local/src/ffmpeg/libavutil/libavutil.a
-	LDFLAGS+=/usr/local/src/x264/libx264.a
-	LDFLAGS+=/usr/local/src/opus-1.0.2/.libs/libopus.a
-	LDFLAGS+=/usr/local/src/speex-1.2rc1/libspeex/.libs/libspeex.a
-	LDFLAGS+=/usr/local/src/libvpx/libvpx.a
-	LDFLAGS+=/usr/local/lib/libmp4v2.a
+	LDFLAGS+=./contrib/ffmpeg/libavformat/libavformat.a
+	LDFLAGS+=./contrib/ffmpeg/libavcodec/libavcodec.a
+	LDFLAGS+=./contrib/ffmpeg/libavresample/libavresample.a
+	LDFLAGS+=./contrib/ffmpeg/libswresample/libswresample.a
+	LDFLAGS+=./contrib/ffmpeg/libswscale/libswscale.a
+	LDFLAGS+=./contrib/ffmpeg/libavutil/libavutil.a
+	LDFLAGS+=./contrib/x264/libx264.a
+	LDFLAGS+=./contrib/opus-1.0.2/.libs/libopus.a
+	LDFLAGS+=./contrib/speex-1.2rc1/libspeex/.libs/libspeex.a
+	LDFLAGS+=./contrib/libvpx/libvpx.a
+	LDFLAGS+=./contrib//mp4v2/.libs/libmp4v2.a
 else
 	#LDFLAGS+= -lavcodec -lswscale -lavformat -lavutil -lavresample -lx264 -lmp4v2 -lspeex -lvpx -lopus
 	LDFLAGS+= -lavcodec -lswscale -lavformat -lavutil -lavresample -lmp4v2 -lspeex -lopus
-	LDFLAGS+=/usr/local/src/x264/libx264.a
+	LDFLAGS+=./contrib/x264/libx264.a
 endif
 
 #LDFLAGS+= -lxmlrpc -lxmlrpc_xmlparse -lxmlrpc_xmltok -lxmlrpc_abyss -lxmlrpc_server -lxmlrpc_util -lnsl -lpthread -lz -ljpeg -lpng -lresolv -L/lib/i386-linux-gnu -lgcrypt
